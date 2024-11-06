@@ -29,9 +29,14 @@ const FormSelect: React.FC<IFormSelectProps> = ({
 }) => {
   const theme = useTheme();
 
-  const handleChange = (value: any) => {
-    onChange && onChange(name, value?.value);
+  const handleChange = (newValue: unknown,
+  ) => {
+    const selectedOption = newValue as { value: string; label: string } | null;
+    if (onChange) {
+      onChange(selectedOption ? selectedOption.value : null);
+    }
   };
+
   const handleBlur = () => {
     onBlur && onBlur(name, true);
   };

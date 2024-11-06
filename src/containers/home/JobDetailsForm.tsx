@@ -4,29 +4,49 @@ import FormInput from "../../components/formComponents/FormInput";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { PageNumbers } from "../../interface/home";
+import { useData } from "./DataProvider";
 import { IJobDetails } from "../../interface/forms";
 
 const JobDetailsForm: React.FC<{
   handleTab: (n: PageNumbers) => void;
 }> = ({ handleTab }) => {
+  const {state,updateState} = useData();
   const { handleChange, errors, touched, handleBlur, handleSubmit, values } =
     useFormik<IJobDetails>({
       initialValues: {
-        jobTitle: "",
-        jobDetails: "",
-        jobLocation: "",
+        jobDetails: state?.jobDetails?.jobDetails,
+        jobLocation: state?.jobDetails?.jobLocation,
+        jobTitle: state?.jobDetails?.jobTitle,
       },
       validationSchema: Yup.object().shape({
         jobTitle: Yup.string().required("Job Title is required"),
         jobDetails: Yup.string().required("Job Details is required"),
         jobLocation: Yup.string().required("Job Location is required"),
-        jobPosition: Yup.string().required("Job position is required"),
+        // jobPosition: Yup.string().required("Job position is required"),
       }),
       onSubmit: (values) => {
         console.log({ values });
+        updateState({
+          jobDetails: {
+            jobDetails: values?.jobDetails,
+            jobLocation: values?.jobLocation,
+            jobTitle: values?.jobTitle,
+          },
+        })
         handleTab(2);
       },
     });
+
+    const handleChangeSideBySide = (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleChange(e);
+      const { name, value } = e.target;
+      updateState({
+        jobDetails: {
+          ...state.jobDetails,
+          [name]: value,
+        },
+      });
+    };
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>
@@ -35,7 +55,7 @@ const JobDetailsForm: React.FC<{
           label="Job Title"
           placeholder="Enter job title"
           name="jobTitle"
-          onChange={handleChange}
+          onChange={handleChangeSideBySide}
           onBlur={handleBlur}
           value={values?.jobTitle}
           error={errors?.jobTitle}
@@ -45,7 +65,7 @@ const JobDetailsForm: React.FC<{
           label="Job Details"
           placeholder="Enter job details"
           name="jobDetails"
-          onChange={handleChange}
+          onChange={handleChangeSideBySide}
           onBlur={handleBlur}
           value={values?.jobDetails}
           error={errors?.jobDetails}
@@ -55,7 +75,7 @@ const JobDetailsForm: React.FC<{
           label="Job Location"
           name="jobLocation"
           placeholder="Enter job location"
-          onChange={handleChange}
+          onChange={handleChangeSideBySide}
           onBlur={handleBlur}
           error={errors.jobLocation}
           touched={touched.jobLocation}

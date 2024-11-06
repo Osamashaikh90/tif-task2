@@ -4,6 +4,8 @@ import FormSelect from "../../components/formComponents/FormSelect";
 import { useFormik } from "formik";
 import { PageNumbers } from "../../interface/home";
 import { IInterViewSettings } from "../../interface/forms";
+import * as Yup from "yup";
+import { useData } from "./DataProvider";
 import {
   interviewDurationOptions,
   interviewLanguageOptions,
@@ -13,6 +15,7 @@ import {
 const InterviewDetailsForm: React.FC<{
   handleTab: (n: PageNumbers) => void;
 }> = ({ handleTab }) => {
+  const { state, updateState } = useData();
   const {
     errors,
     touched,
@@ -22,12 +25,24 @@ const InterviewDetailsForm: React.FC<{
     setFieldValue,
   } = useFormik<IInterViewSettings>({
     initialValues: {
-      interviewMode: "",
-      interviewDuration: "",
-      interviewLanguage: "",
+      interviewDuration: state?.interviewSettings?.interviewDuration,
+      interviewLanguage: state?.interviewSettings?.interviewLanguage,
+      interviewMode: state?.interviewSettings?.interviewMode,
     },
+    validationSchema: Yup.object().shape({
+      interviewMode: Yup.string().required("Interview Mode is required"),
+      interviewDuration: Yup.string().required("Interview Duration is required"),
+      interviewLanguage: Yup.string().required("Interview Language is required"),
+    }),
     onSubmit: (values) => {
       console.log({ values });
+      updateState({
+        interviewSettings: {
+          interviewDuration: values?.interviewDuration,
+          interviewLanguage: values?.interviewLanguage,
+          interviewMode: values?.interviewMode,
+        },
+      })
       alert("Form successfully submitted");
     },
   });
@@ -40,7 +55,15 @@ const InterviewDetailsForm: React.FC<{
           placeholder="Select interview mode"
           name="interviewMode"
           options={interviewModeOptions}
-          onChange={setFieldValue}
+          onChange={(value: string) => {
+            setFieldValue("interviewMode", value);
+            updateState({
+              interviewSettings: {
+                ...state.interviewSettings,
+                interviewMode: value,
+              },
+            });
+          }}
           onBlur={setFieldTouched}
           value={values?.interviewMode}
           error={errors?.interviewMode}
@@ -51,18 +74,34 @@ const InterviewDetailsForm: React.FC<{
           placeholder="Select interview duration"
           name="interviewDuration"
           options={interviewDurationOptions}
-          onChange={setFieldValue}
+          onChange={(value: string) => {
+            setFieldValue("interviewDuration", value);
+            updateState({
+              interviewSettings: {
+                ...state.interviewSettings,
+                interviewDuration: value,
+              },
+            });
+          }}
           onBlur={setFieldTouched}
           value={values?.interviewDuration}
           error={errors?.interviewDuration}
           touched={touched?.interviewDuration}
         />
         <FormSelect
-          label="Job Location"
+          label="Interview Language"
           name="interviewLanguage"
           placeholder="Select interview language"
           options={interviewLanguageOptions}
-          onChange={setFieldValue}
+          onChange={(value: string) => {
+            setFieldValue("interviewLanguage", value);
+            updateState({
+              interviewSettings: {
+                ...state.interviewSettings,
+                interviewLanguage: value,
+              },
+            });
+          }}
           onBlur={setFieldTouched}
           error={errors.interviewLanguage}
           touched={touched.interviewLanguage}
